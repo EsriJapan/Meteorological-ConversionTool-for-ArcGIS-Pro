@@ -1,1 +1,63 @@
 # Meteorolocigacal-ConversionTool-for-ArcGIS-Pro
+# 概要
+「気象データ変換ツール for ArcGIS Pro」 は、気象庁が保有し気象業務支援センターが提供する気象データを読み込み、ラスター(TIFF形式) へ変換を行う ArcGIS Pro 用のジオプロセシング ツールで、ArcGIS Pro を利用するライセンスをお持ちの方がご利用可能です。
+ArcGIS Desktop をご利用の場合は、各バージョンに対応した「気象データ変換ツール」をご利用ください。  
+[参考] ArcGISブログ： [気象データ変換ツール 10.8 対応版をリリース](https://blog.esrij.com/2020/07/29/post-36919/)
+
+
+### 更新履歴
+* 2024/02/16 ： 「気象データ変換ツール for ArcGIS Pro」 を公開
+  
+## ジオプロセシング ツールボックスの構成
+
+「気象データ変換ツール for ArcGIS Pro」は、ArcGIS Desktop の気象データ変換ツールから一部機能を移植したコンソールアプリケーション（`met_cnv.exe`）と、そのコンソールアプリケーションをジオプロセシング ツールとして呼び出しするための[Python toolbox](https://pro.arcgis.com/ja/pro-app/latest/arcpy/geoprocessing_and_python/a-quick-tour-of-python-toolboxes.htm) （`MetConv_toolbox.pyt`） から構成されています。  
+また、ツールボックス内には、変換対象の気象データに応じた次の９種類のジオプロセシング ツールで構成されています。
+
+|ジオプロセシング ツール||
+|:---|:---|
+|解析雨量(RAP)のインポート|Import JMA Analysis Rap|
+|解析雨量/速報版解析雨量のインポート|Import JMA Analysis|
+|降水ナウキャストのインポート|Import JMA Nowcast|
+|降水短時間予報/速報版短時間予報/降水15時間予報のインポート|Import JMA Forecast|
+|高解像度降水ナウキャストのインポート|Impotr JMA High Resolution Nowcast |
+|全国合成レーダーのインポート|Import JMA Radar|
+|土砂災害警戒判定メッシュのインポート|Import JMA Dosha Mesh Analysis|
+|土壌雨量指数/高頻度化土壌雨量指数のインポート|Import JMA Soil water index Analysis|
+|土壌雨量指数予測値/高頻度化土壌雨量指数予測値のインポート|Import JMA Soil water index Forecast|
+  
+### 動作環境
+本ツールの動作環境は、以下の通りです。
+- OS：
+  [ArcGIS Pro 3.1 のサポートされているオペレーションシステム](https://pro.arcgis.com/ja/pro-app/3.1/get-started/arcgis-pro-system-requirements.htm) に準じる
+- ArcGIS：
+  ArcGIS Pro 3.1 以上（3.1.3 で動作確認）
+- Microsoft .NET：
+  - コンソールアプリケーションの要件：.NET Framework 4.8（Windows 11, Windows 10 May 2019 Update以降には含まれています）
+  - ArcGIS Pro 3.1 のソフトウェア要件：Windows x64 インストーラーを使用した、Microsoft .NET Desktop Runtime [6.0.5](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-6.0.5-windows-x64-installer) または[それ以降のパッチ リリース](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (6.0.6 など) が必要
+  
+  ※ ArcGIS Pro 2.x や ArcGIS Pro 3.0 等でも問題なく動作するとは思いますが、ArcGIS Pro 3.1.3 の環境で動作確認を行っているため、上記環境でのご利用を推奨いたします。
+  
+
+### 利用方法
+「[気象データ変換ツール for ArcGIS Pro]()」をダウンロードし、任意の場所にZIPファイルを解凍した上でご利用ください。  
+インストール・アンインストール、操作方法や仕様に関する詳細は、一緒に配布している [気象データ変換ツール for ArcGIS Pro 利用ガイド](xxx) をご参照の上、ご利用ください。
+  
+
+### 免責事項
+* [MeteorologicalConversinTool] フォルダーに含まれる「気象データ変換ツール for ArcGIS Pro（ コンソールアプリケーション: `met_cnv.exe` と Python toolbox: `MetConv_toolbox.pyt` ）」は、サンプルとして提供しているものであり、動作に関する保証、および製品ライフサイクルに従った Esri 製品サポート サービスは提供しておりません。
+* 同様に [Meteorological_sample_script] フォルダーに含まれるフィールド演算式、Python ノートブック もサンプルとして提供しているものであり、動作に関する保証、および製品ライフサイクルに従った Esri 製品サポート サービスは提供しておりません。
+* 上記記載の本ツール、フィールド演算式、Python ノートブック によって生じた損失及び損害等について、一切の責任を負いかねますのでご了承ください。
+* 弊社で提供している[Esri 製品サポートサービス](https://www.esrij.com/services/maintenance/) では、本ツール、フィールド演算式、Python ノートブック に関しての Ｑ＆Ａ サポートの受付を行っておりませんので、予めご了承の上、ご利用ください。詳細は[
+ESRIジャパン GitHub アカウントにおけるオープンソースへの貢献について](https://github.com/EsriJapan/contributing)をご参照ください。
+
+## ライセンス
+Copyright 2024 Esri Japan Corporation.
+
+Apache License Version 2.0（「本ライセンス」）に基づいてライセンスされます。あなたがこのファイルを使用するためには、本ライセンスに従わなければなりません。
+本ライセンスのコピーは下記の場所から入手できます。
+
+> http://www.apache.org/licenses/LICENSE-2.0
+
+適用される法律または書面での同意によって命じられない限り、本ライセンスに基づいて頒布されるソフトウェアは、明示黙示を問わず、いかなる保証も条件もなしに「現状のまま」頒布されます。本ライセンスでの権利と制限を規定した文言については、本ライセンスを参照してください。
+
+ライセンスのコピーは本リポジトリの[ライセンス ファイル](./LICENSE)で利用可能です。
