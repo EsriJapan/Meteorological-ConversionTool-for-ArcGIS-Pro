@@ -27,7 +27,7 @@ Purpose     : ArcGIS Desktop のサポート終了が迫ってきたため、「
 Author      :
 Copyright   :
 Created     :2023/12/12
-Last Updated:2024/02/15
+Last Updated:2024/02/19
 ArcGIS Version: ArcGIS Pro 3.1 以上 （ArcGIS Pro 3.1.3 で動作確認）
 """
 import arcpy
@@ -129,7 +129,7 @@ class MetConvUtil():
         return outfile
 
     def run_exe(self, input_file, input_type, output_type, output_ws, output_data, \
-                check_cell=False, check_nozero=False, clip_env=None, callback=None):
+                check_cell=False, clip_env=None, callback=None):
         """
         met_cnv.exe の引数定義
         引数           必須   内容
@@ -150,8 +150,10 @@ class MetConvUtil():
         --output_ws    true     出力ワークスペース/フォルダ
         --output_data  false    出力フィーチャクラス名/ファイル名
         --check_cell   false    セルサイズを緯度経度同値に分割して出力(true/false)
-        --check_date   false    NetCDF時間設定/CSV時間項目の日時を日本標準時にする(true/false) - TIFF のみなので使えない
+        --check_date   false    NetCDF時間設定/CSV時間項目の日時を日本標準時にする(true/false)
+                                 ↑ TIFF のみなので使えない
         --check_nozero false    ０値以下のメッシュ出力を除外(true/false)
+                                 ↑ TIFF のみなので使えない
         --clip_env     null     出力対象地域（緯度経度）
                                 ymin  xmin  ymax  xmax
         --log_dir      null     ログ出力先フォルダ（未指定:出力しない）
@@ -166,7 +168,6 @@ class MetConvUtil():
         args.append("--output_ws \"{}\"".format(output_ws))
         args.append("--output_data \"{}\"".format(output_data))
         args.append("--check_cell \"{}\"".format( str(check_cell).lower() ))
-        args.append("--check_nozero \"{}\"".format( str(check_nozero).lower() ))
         if clip_env is not None:
             args.append("--clip_env \"{}\"".format(clip_env))
         
@@ -265,8 +266,8 @@ class MetcnvRadar_Tool(object):
         #param3 出力ファイル名/フィーチャクラス名(*予測時間が(分)付加されます)
         #param4 セルサイズ15×15秒で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
-        #param6 出力対象地域（緯度経度） （オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
+        #param5 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：全国合成レーダーデータ",
             name="input_file",
@@ -309,21 +310,13 @@ class MetcnvRadar_Tool(object):
         param4.value = "False"
 
         param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
-            
-        param6 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -386,15 +379,14 @@ class MetcnvRadar_Tool(object):
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
@@ -419,8 +411,8 @@ class MetcnvSwiAnal_Tool(object):
         #param3 出力ファイル名/フィーチャクラス名(*予測時間が(分)付加されます)
         #param4 セルサイズ15×15秒(高頻度土壌雨量指数)／45×45秒(土壌雨量指数)で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
-        #param6 出力対象地域（緯度経度） （オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
+        #param5 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：土壌雨量指数/高頻度化土壌雨量指数データ",
             name="input_file",
@@ -461,23 +453,15 @@ class MetcnvSwiAnal_Tool(object):
             parameterType="Optional",
             direction="Input")
         param4.value = "False"
-        
-        param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
 
-        param6 = arcpy.Parameter(
+        param5 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -542,15 +526,14 @@ class MetcnvSwiAnal_Tool(object):
         #output_data = parameters[3].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
@@ -575,8 +558,8 @@ class MetcnvSwiFcast_Tool(object):
         #param3 出力ファイル名/フィーチャクラス名(*予測時間が(分)付加されます)
         #param4 セルサイズ15×15秒(高頻度土壌雨量指数予測)／45×45秒(土壌雨量指数予測)で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
-        #param6 出力対象地域（緯度経度） （オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
+        #param5 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：土壌雨量指数予測値/高頻度化土壌雨量指数予測値データ",
             name="input_file",
@@ -619,21 +602,13 @@ class MetcnvSwiFcast_Tool(object):
         param4.value = "False"
 
         param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
-        
-        param6 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -697,15 +672,14 @@ class MetcnvSwiFcast_Tool(object):
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
@@ -730,7 +704,7 @@ class MetcnvDosha_Tool(object):
         #param3 出力ファイル名/フィーチャクラス名(*予測時間が(分)付加されます)
         #param4 セルサイズ45×45秒で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
         #param6 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：土砂災害警戒判定メッシュデータ",
@@ -774,21 +748,13 @@ class MetcnvDosha_Tool(object):
         param4.value = "False"
 
         param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
-        
-        param6 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -851,15 +817,14 @@ class MetcnvDosha_Tool(object):
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
@@ -884,8 +849,8 @@ class MetcnvAnalRap_Tool(object):
         #param3 出力ファイル名/フィーチャクラス名(*予測時間が(分)付加されます)
         #param4 セルサイズ45×45秒(5kmメッシュの場合)／22.5×22.5秒(2.5kmメッシュの場合)で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
-        #param6 出力対象地域（緯度経度） （オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
+        #param5 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：解析雨量(RAP)データ",
             name="input_file",
@@ -928,21 +893,13 @@ class MetcnvAnalRap_Tool(object):
         param4.value = "False"
 
         param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
-            
-        param6 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -1005,15 +962,14 @@ class MetcnvAnalRap_Tool(object):
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
@@ -1038,8 +994,8 @@ class MetcnvAnal_Tool(object):
         #param3 出力ファイル名/フィーチャクラス名(*予測時間が(分)付加されます)
         #param4 セルサイズ15×15秒で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
-        #param6 出力対象地域（緯度経度） （オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
+        #param5 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：解析雨量/速報版解析雨量データ",
             name="input_file",
@@ -1082,21 +1038,13 @@ class MetcnvAnal_Tool(object):
         param4.value = "False"
 
         param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
-
-        param6 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -1159,15 +1107,14 @@ class MetcnvAnal_Tool(object):
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
@@ -1192,8 +1139,8 @@ class MetcnvNcast_Tool(object):
         #param3 出力ファイル名/フィーチャクラス名(*予測時間が(分)付加されます)
         #param4 セルサイズ15×15秒で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
-        #param6 出力対象地域（緯度経度） （オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
+        #param5 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：降水ナウキャストデータ",
             name="input_file",
@@ -1236,21 +1183,13 @@ class MetcnvNcast_Tool(object):
         param4.value = "False"
 
         param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
-            
-        param6 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -1313,15 +1252,14 @@ class MetcnvNcast_Tool(object):
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
@@ -1346,8 +1284,8 @@ class MetcnvFcast_Tool(object):
         #param3 出力ファイル名/フィーチャクラス名(*予測時間が(分)付加されます)
         #param4 セルサイズ15×15秒(降水短時間予報)／45×45秒(降水15時間予報)で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
-        #param6 出力対象地域（緯度経度） （オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
+        #param5 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：降水短時間予報/速報版短時間予報/降水15時間予報データ",
             name="input_file",
@@ -1390,21 +1328,13 @@ class MetcnvFcast_Tool(object):
         param4.value = "False"
 
         param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
-        
-        param6 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -1467,15 +1397,14 @@ class MetcnvFcast_Tool(object):
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
@@ -1501,8 +1430,8 @@ class MetcnvNcastHR_Tool(object):
         #0分から30分先までは250m分解能、35分先から60分さきまでは1kmの分解能
         #param4 セルサイズ3.75×3.75秒(30分先まで)／15×15秒(35分先から60分先まで)で出力（オプション）
         #(未定義) 出力ファイル名/フィーチャクラス名/NetCDF時間設定/CSV時間項目の日時を日本標準時間にする
-        #param5 0値以下のメッシュ出力を除外（オプション）
-        #param6 出力対象地域（緯度経度） （オプション）
+        #(未定義) 0値以下のメッシュ出力を除外（オプション）
+        #param5 出力対象地域（緯度経度） （オプション）
         param0 = arcpy.Parameter(
             displayName= "入力：高解像度降水ナウキャストデータ",
             name="input_file",
@@ -1545,21 +1474,13 @@ class MetcnvNcastHR_Tool(object):
         param4.value = "False"
 
         param5 = arcpy.Parameter(
-            displayName="0値以下のメッシュ出力を除外（オプション）",
-            name="chk_nozero",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input")
-        param5.value = "False"
-
-        param6 = arcpy.Parameter(
             displayName="出力対象地域（緯度経度） （オプション）",
             name="clip_env",
             datatype="GPExtent",
             parameterType="Optional",
             direction="Input")
             
-        params = [param0, param1, param2, param3, param4, param5, param6]
+        params = [param0, param1, param2, param3, param4, param5]
         return params
 
     def isLicensed(self):
@@ -1622,15 +1543,14 @@ class MetcnvNcastHR_Tool(object):
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
         chk_cell = parameters[4].valueAsText
-        chk_nozero = parameters[5].valueAsText
         clip_env = None
-        if parameters[6].value is not None:
-            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[6].value)
+        if parameters[5].value is not None:
+            ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
             clip_env = "{} {} {} {}".format(ext_min_y, ext_min_x, ext_max_y, ext_max_x)
         # met_cnv.exe を繰り返し実行
         for input_file, output_data in zip(input_files_list, output_data_list):
             arcpy.AddMessage(u"{} の変換開始".format(os.path.basename(input_file)) )
-            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, chk_nozero, clip_env)
+            returncode = self.metutil.run_exe(input_file, self.metutil.get_format_name(), output_type, output_ws, output_data, chk_cell, clip_env)
             if returncode == 0:
                 arcpy.AddMessage(u"変換終了")
             else:
