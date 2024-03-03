@@ -27,7 +27,7 @@ Purpose     : ArcGIS Desktop のサポート終了が迫ってきたため、「
 Author      :
 Copyright   :
 Created     :2023/12/12
-Last Updated:2024/02/19
+Last Updated:2024/03/03
 ArcGIS Version: ArcGIS Pro 3.1 以上 （ArcGIS Pro 3.1.3 で動作確認）
 """
 import arcpy
@@ -116,7 +116,7 @@ class MetConvUtil():
     def __create_cmd(self, args):
         """ met_cnv.exe のコマンドを作成 """
         cmd = " ".join(args)
-        return "{} {}".format(self.exe_path, cmd)
+        return '"{}" {}'.format(self.exe_path, cmd) # 2024.03.03 - exe_path に空白スペースが入った時にも対応
 
     def __ncast_hr_decompress(self, gzfile):
         """高解像度ナウキャストのgzipを解凍"""

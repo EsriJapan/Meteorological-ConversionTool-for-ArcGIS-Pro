@@ -7,7 +7,8 @@ ArcGIS Desktop をご利用の場合は、各バージョンに対応した「�
 
 ### 更新履歴
 * 2024/02/20 ： 「気象データ変換ツール for ArcGIS Pro」 を公開
-  
+* 2024/03/03 ： ジオプロセシング ツール（`MetConv_toolbox.pyt`）とZIPファイルの更新
+
 ## ジオプロセシング ツールボックスの構成
 
 「気象データ変換ツール for ArcGIS Pro」は、ArcGIS Desktop の気象データ変換ツールから一部機能を移植したコンソールアプリケーション（`met_cnv.exe`）と、そのコンソールアプリケーションをジオプロセシング ツールとして呼び出しするための[Python toolbox](https://pro.arcgis.com/ja/pro-app/latest/arcpy/geoprocessing_and_python/a-quick-tour-of-python-toolboxes.htm) （`MetConv_toolbox.pyt`） から構成されています。  
@@ -39,7 +40,7 @@ ArcGIS Desktop をご利用の場合は、各バージョンに対応した「�
   
 
 ### 利用方法
-「[気象データ変換ツール for ArcGIS Pro](https://github.com/EsriJapan/Meteorolocigacal-ConversionTool-for-ArcGIS-Pro/releases/download/v1.0.0/MeteorologicalConversionTool_forPro.zip)」をダウンロードし、任意の場所にZIPファイルを解凍した上でご利用ください。  
+「[気象データ変換ツール for ArcGIS Pro](https://github.com/EsriJapan/Meteorolocigacal-ConversionTool-for-ArcGIS-Pro/releases/download/v1.0.1/MeteorologicalConversionTool_forPro.zip)」をダウンロードし、任意の場所にZIPファイルを解凍した上でご利用ください。  
 インストール・アンインストール、操作方法や仕様に関する詳細は、一緒に配布している [気象データ変換ツール for ArcGIS Pro 利用ガイド](https://github.com/EsriJapan/Meteorolocigacal-ConversionTool-for-ArcGIS-Pro/blob/main/Doc/%E6%B0%97%E8%B1%A1%E3%83%87%E3%83%BC%E3%82%BF%E5%A4%89%E6%8F%9B%E3%83%84%E3%83%BC%E3%83%AB_forArcGISPro_%E5%88%A9%E7%94%A8%E3%82%AC%E3%82%A4%E3%83%89.pdf) をご参照の上、ご利用ください。
   
 
