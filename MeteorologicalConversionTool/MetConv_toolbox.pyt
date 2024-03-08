@@ -27,7 +27,7 @@ Purpose     : ArcGIS Desktop のサポート終了が迫ってきたため、「
 Author      :
 Copyright   :
 Created     :2023/12/12
-Last Updated:2024/03/03
+Last Updated:2024/03/07
 ArcGIS Version: ArcGIS Pro 3.1 以上 （ArcGIS Pro 3.1.3 で動作確認）
 """
 import arcpy
@@ -116,7 +116,8 @@ class MetConvUtil():
     def __create_cmd(self, args):
         """ met_cnv.exe のコマンドを作成 """
         cmd = " ".join(args)
-        return '"{}" {}'.format(self.exe_path, cmd) # 2024.03.03 - exe_path に空白スペースが入った時にも対応
+        return "{} {}".format(self.exe_path, cmd)
+        #return '"{}" {}'.format(self.exe_path, cmd) # 2024.03.03 - exe_path に空白スペースが入った時にも対応
 
     def __ncast_hr_decompress(self, gzfile):
         """高解像度ナウキャストのgzipを解凍"""
@@ -132,7 +133,7 @@ class MetConvUtil():
                 check_cell=False, clip_env=None, callback=None):
         """
         met_cnv.exe の引数定義
-        引数           必須   内容
+        引数            必須      内容
                        デフォルト
         --input_file   true     入力ファイル
         --input_type   true     入力形式指定 - Constants.cs -> JmaDataType
@@ -149,10 +150,11 @@ class MetConvUtil():
                                 TIFF:現在はTIFFのみ
         --output_ws    true     出力ワークスペース/フォルダ
         --output_data  false    出力フィーチャクラス名/ファイル名
-        --check_cell   false    セルサイズを緯度経度同値に分割して出力(true/false)
-        --check_date   false    NetCDF時間設定/CSV時間項目の日時を日本標準時にする(true/false)
+                                 ↑ 上記まで必須パラメータ ↑ 
+        --check_cell   false    セルサイズを緯度経度同値に分割して出力する場合のみ --check_cell の引数を指定
+        --check_date   false    NetCDF時間設定/CSV時間項目の日時を日本標準時に指定したい場合のみ --check_date の引数を指定
                                  ↑ TIFF のみなので使えない
-        --check_nozero false    ０値以下のメッシュ出力を除外(true/false)
+        --check_nozero false    ０値以下のメッシュ出力を除外する場合のみ --check_nozero の引数を指定
                                  ↑ TIFF のみなので使えない
         --clip_env     null     出力対象地域（緯度経度）
                                 ymin  xmin  ymax  xmax
@@ -167,7 +169,8 @@ class MetConvUtil():
         args.append("--output_type \"{}\"".format(output_type))
         args.append("--output_ws \"{}\"".format(output_ws))
         args.append("--output_data \"{}\"".format(output_data))
-        args.append("--check_cell \"{}\"".format( str(check_cell).lower() ))
+        if check_cell: #2024.03.04 - check_cell が True の場合のみオプション引数 '--check_cell' を追加
+            args.append("--check_cell ")
         if clip_env is not None:
             args.append("--clip_env \"{}\"".format(clip_env))
         
@@ -378,7 +381,7 @@ class MetcnvRadar_Tool(object):
         output_ws = parameters[1].valueAsText
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
@@ -525,7 +528,7 @@ class MetcnvSwiAnal_Tool(object):
         output_type = parameters[2].valueAsText
         #output_data = parameters[3].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
@@ -671,7 +674,7 @@ class MetcnvSwiFcast_Tool(object):
         output_ws = parameters[1].valueAsText
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
@@ -816,7 +819,7 @@ class MetcnvDosha_Tool(object):
         output_ws = parameters[1].valueAsText
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
@@ -961,7 +964,7 @@ class MetcnvAnalRap_Tool(object):
         output_ws = parameters[1].valueAsText
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
@@ -1106,7 +1109,7 @@ class MetcnvAnal_Tool(object):
         output_ws = parameters[1].valueAsText
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value  # 2024.03.04 boolean 値として判定に使いたいので parameters[4].valueで取得
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
@@ -1251,7 +1254,7 @@ class MetcnvNcast_Tool(object):
         output_ws = parameters[1].valueAsText
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
@@ -1396,7 +1399,7 @@ class MetcnvFcast_Tool(object):
         output_ws = parameters[1].valueAsText
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
@@ -1542,7 +1545,7 @@ class MetcnvNcastHR_Tool(object):
         output_ws = parameters[1].valueAsText
         output_type = parameters[2].valueAsText
         output_data_list = parameters[3].valueAsText.split(';')
-        chk_cell = parameters[4].valueAsText
+        chk_cell = parameters[4].value
         clip_env = None
         if parameters[5].value is not None:
             ext_min_x, ext_min_y, ext_max_x, ext_max_y = Toolbox.getExtentValue(parameters[5].value)
