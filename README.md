@@ -12,6 +12,8 @@ ArcGIS Desktop をご利用の場合は、各バージョンに対応した「�
   - 出力する TIFF を `圧縮なし`から `LZW圧縮` に変更
   - 解析雨量(RAP)のインポート でピクセル座標のずれが生じている件に対応
   - 利用ガイドの更新
+* 2024/03/28 : 「気象データ変換ツール for ArcGIS Pro」 をバージョン 1.1.1 に更新
+  - 日本語パスや半角スペースを含むディレクトリへツールを配置した際、変換に失敗する件に対応
 
 ## ジオプロセシング ツールボックスの構成
 
@@ -44,7 +46,7 @@ ArcGIS Desktop をご利用の場合は、各バージョンに対応した「�
   
 
 ### 利用方法
-「[気象データ変換ツール for ArcGIS Pro](https://github.com/EsriJapan/Meteorolocigacal-ConversionTool-for-ArcGIS-Pro/releases/download/v1.1.0/MeteorologicalConversionTool_forPro.zip)」をダウンロードし、任意の場所にZIPファイルを解凍した上でご利用ください。  
+「[気象データ変換ツール for ArcGIS Pro](https://github.com/EsriJapan/Meteorolocigacal-ConversionTool-for-ArcGIS-Pro/releases/download/v1.1.1/MeteorologicalConversionTool_forPro.zip)」をダウンロードし、任意の場所にZIPファイルを解凍した上でご利用ください。  
 インストール・アンインストール、操作方法や仕様に関する詳細は、一緒に配布している [気象データ変換ツール for ArcGIS Pro 利用ガイド](https://github.com/EsriJapan/Meteorolocigacal-ConversionTool-for-ArcGIS-Pro/blob/main/Doc/%E6%B0%97%E8%B1%A1%E3%83%87%E3%83%BC%E3%82%BF%E5%A4%89%E6%8F%9B%E3%83%84%E3%83%BC%E3%83%AB_forArcGISPro_%E5%88%A9%E7%94%A8%E3%82%AC%E3%82%A4%E3%83%89.pdf) をご参照の上、ご利用ください。
   
 
