@@ -14,13 +14,14 @@ ArcGIS Desktop をご利用の場合は、各バージョンに対応した「�
   - 利用ガイドの更新
 * 2024/03/28 : 「気象データ変換ツール for ArcGIS Pro」 をバージョン 1.1.1 に更新
   - 日本語パスや半角スペースを含むディレクトリへツールを配置した際、変換に失敗する件に対応
+* 2025/05/23 : 変換した気象データ（ラスターデータ）をメッシュ ポリゴンに変換するジオプロセシング ツール（`RasterConv_toolbox.pyt`）を追加
 
 ## ジオプロセシング ツールボックスの構成
 
 「気象データ変換ツール for ArcGIS Pro」は、ArcGIS Desktop の気象データ変換ツールから一部機能を移植したコンソールアプリケーション（`met_cnv.exe`）と、そのコンソールアプリケーションをジオプロセシング ツールとして呼び出しするための[Python toolbox](https://pro.arcgis.com/ja/pro-app/latest/arcpy/geoprocessing_and_python/a-quick-tour-of-python-toolboxes.htm) （`MetConv_toolbox.pyt`） から構成されています。  
 また、ツールボックス内には、変換対象の気象データに応じた次の９種類のジオプロセシング ツールで構成されています。
 
-|ジオプロセシング ツール||
+|ジオプロセシング ツール|`MetConv_toolbox.pyt`|
 |:---|:---|
 |解析雨量(RAP)のインポート|Import JMA Analysis Rap|
 |解析雨量/速報版解析雨量のインポート|Import JMA Analysis|
@@ -31,6 +32,15 @@ ArcGIS Desktop をご利用の場合は、各バージョンに対応した「�
 |土砂災害警戒判定メッシュのインポート|Import JMA Dosha Mesh Analysis|
 |土壌雨量指数/高頻度化土壌雨量指数のインポート|Import JMA Soil water index Analysis|
 |土壌雨量指数予測値/高頻度化土壌雨量指数予測値のインポート|Import JMA Soil water index Forecast|
+  
+「気象データ変換ツール」で対応していたメッシュ ポリゴンへの変換 の代替として、変換した気象データ（ラスターデータ）をメッシュ ポリゴンに変換するジオプロセシング ツールを含む、[Python toolbox](https://pro.arcgis.com/ja/pro-app/latest/arcpy/geoprocessing_and_python/a-quick-tour-of-python-toolboxes.htm) （`RasterConv_toolbox.pyt`） を2025年5月に追加しました。  
+ただし、汎用的なラスターをメッシュポリゴンに変換するツールのため、出力される属性は[ラスター → ポイント (Raster to Point) ](https://pro.arcgis.com/ja/pro-app/latest/tool-reference/conversion/raster-to-point.htm) と同様、入力ラスターのセル値 (VALUE フィールド) のみです。  
+  
+|ジオプロセシング ツール|`RasterConv_toolbox.pyt`|
+|:---|:---|
+|ラスターからメッシュポリゴンへ変換|ー|
+  
+  
   
 ### 動作環境
 本ツールの動作環境は、以下の通りです。
@@ -46,12 +56,12 @@ ArcGIS Desktop をご利用の場合は、各バージョンに対応した「�
   
 
 ### 利用方法
-「[気象データ変換ツール for ArcGIS Pro](https://github.com/EsriJapan/Meteorological-ConversionTool-for-ArcGIS-Pro/releases/download/v1.1.1/MeteorologicalConversionTool_forPro.zip)」をダウンロードし、任意の場所にZIPファイルを解凍した上でご利用ください。  
+「[気象データ変換ツール for ArcGIS Pro](https://github.com/EsriJapan/Meteorological-ConversionTool-for-ArcGIS-Pro/releases/download/v1.2.0/MeteorologicalConversionTool_forPro.zip)」をダウンロードし、任意の場所にZIPファイルを解凍した上でご利用ください。  
 インストール・アンインストール、操作方法や仕様に関する詳細は、一緒に配布している [気象データ変換ツール for ArcGIS Pro 利用ガイド](https://github.com/EsriJapan/Meteorological-ConversionTool-for-ArcGIS-Pro/blob/main/Doc/%E6%B0%97%E8%B1%A1%E3%83%87%E3%83%BC%E3%82%BF%E5%A4%89%E6%8F%9B%E3%83%84%E3%83%BC%E3%83%AB_forArcGISPro_%E5%88%A9%E7%94%A8%E3%82%AC%E3%82%A4%E3%83%89.pdf) をご参照の上、ご利用ください。
   
 
 ### 免責事項
-* [MeteorologicalConversinTool] フォルダーに含まれる「気象データ変換ツール for ArcGIS Pro（ コンソールアプリケーション: `met_cnv.exe` と Python toolbox: `MetConv_toolbox.pyt` ）」は、サンプルとして提供しているものであり、動作に関する保証、および製品ライフサイクルに従った Esri 製品サポート サービスは提供しておりません。
+* [MeteorologicalConversinTool] フォルダーに含まれる「気象データ変換ツール for ArcGIS Pro（ コンソールアプリケーション: `met_cnv.exe` と Python toolbox: `MetConv_toolbox.pyt`, `RasterConv_toolbox.pyt` ）」は、サンプルとして提供しているものであり、動作に関する保証、および製品ライフサイクルに従った Esri 製品サポート サービスは提供しておりません。
 * 同様に [Meteorological_sample_script] フォルダーに含まれるフィールド演算式、Python ノートブック もサンプルとして提供しているものであり、動作に関する保証、および製品ライフサイクルに従った Esri 製品サポート サービスは提供しておりません。
 * 上記記載の本ツール、フィールド演算式、Python ノートブック によって生じた損失及び損害等について、一切の責任を負いかねますのでご了承ください。
 * 弊社で提供している[Esri 製品サポートサービス](https://www.esrij.com/services/maintenance/) では、本ツール、フィールド演算式、Python ノートブック に関しての Ｑ＆Ａ サポートの受付を行っておりませんので、予めご了承の上、ご利用ください。詳細は[
